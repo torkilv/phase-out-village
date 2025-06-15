@@ -36,6 +36,19 @@ As future production is secret and emission is tied to production, the following
   78% of the revenue is calculated as the tax revenue. We set an estimated dividend percentage for each oil field
   based on historical values
 
+## Tech Stack
+
+This project uses a modern, high-performance stack for rapid UI development and simulation:
+
+- **Core:** React + Vite + TypeScript — Fast, modern, great ecosystem
+- **State Management:** Zustand — Simple, performant, less boilerplate
+- **UI Components & Styling:** Chakra UI — Accessible, easy theming, flexible
+- **Data Visualization:** Recharts — Declarative, React-first, customizable
+- **Map Rendering:** react-simple-maps — Lightweight, stylized, easy interactivity
+- **Internationalization:** react-i18next — Standard, dynamic switching
+- **Animations:** Framer Motion — Modern, easy, React-native
+- **Testing:** Jest + React Testing Library — Standard, easy, good docs
+
 ## Features
 
 - For each oil field, the user can select an phase out year between 2027 and 2040
@@ -58,3 +71,132 @@ This game is a purely frontend application developed with React. OpenLayers are 
 charts. The game is optimized for mobile display format.
 
 The development language is English. The UI language is Norwegian.
+
+## Design & Planning
+
+This section documents the current game plan and wireframes for Phase Out Village. All diagrams are stored here for transparency and future reference.
+
+### High-Level Screen Flow
+```mermaid
+flowchart TD
+  A[Landing Page]
+  B[Main Game Screen]
+  C[Annual Status Popup]
+  D[Endgame/Results Screen]
+
+  A -- Play game --> B
+  B -- Advance year --> C
+  C -- Continue --> B
+  B -- Game ends --> D
+  D -- Restart --> A
+
+  subgraph Main Game Screen Details
+    B1[Map: Clickable Oil Fields]
+    B2[Resource Bars: Emissions, Energy, Happiness, Equality, Revenue]
+    B3[Investment Controls]
+    B4[Timeline/Progress Bar]
+    B5[Language Toggle]
+    B6[Advance Year Button]
+    B --> B1
+    B --> B2
+    B --> B3
+    B --> B4
+    B --> B5
+    B --> B6
+  end
+
+  subgraph Annual Status Popup Details
+    C1[Yearly Metrics Summary]
+    C2[Paris Agreement Feedback]
+    C3[Continue Button]
+    C --> C1
+    C --> C2
+    C --> C3
+  end
+
+  subgraph Endgame/Results Screen Details
+    D1[Final Summary]
+    D2[Graphs of Metrics]
+    D3[Narrative]
+    D4[Restart Button]
+    D --> D1
+    D --> D2
+    D --> D3
+    D --> D4
+  end
+```
+
+### Landing Page Wireframe
+```mermaid
+flowchart TD
+  L1[Game Title: Phase Out Village]
+  L2[Short Description]
+  L3[Play Game Button]
+  L4[Language Toggle (EN/NO)]
+  L5[Inspirational Image/Sketch]
+  L6[Credits/Links (optional)]
+
+  L1 --> L2
+  L2 --> L3
+  L3 --> L4
+  L1 --> L5
+  L5 --> L6
+```
+
+### Main Game Screen Wireframe
+```mermaid
+flowchart TD
+  M1[Map: Clickable Oil Fields]
+  M2[Resource Bars: Emissions, Energy, Happiness, Equality, Revenue]
+  M3[Investment Controls: Energy Efficiency, Oil, Renewables, Nuclear]
+  M4[Timeline/Progress Bar (Years)]
+  M5[Advance Year Button]
+  M6[Language Toggle (EN/NO)]
+  M7[Tooltip/Help Button]
+
+  M1 --> M2
+  M2 --> M3
+  M3 --> M4
+  M4 --> M5
+  M2 --> M6
+  M6 --> M7
+```
+
+### Annual Status Popup Wireframe
+```mermaid
+flowchart TD
+  P1[Popup: Yearly Status]
+  P2[Metrics Summary: Emissions, Energy, Happiness, Equality, Revenue]
+  P3[Phase-Out Progress]
+  P4[Investments Overview]
+  P5[Paris Agreement Feedback]
+  P6[Continue Button]
+
+  P1 --> P2
+  P2 --> P3
+  P3 --> P4
+  P4 --> P5
+  P5 --> P6
+```
+
+### Endgame/Results Screen Wireframe
+```mermaid
+flowchart TD
+  E1[Final Summary: Paris Agreement Compliance]
+  E2[Graphs: Emissions, Energy, Happiness, Equality, Revenue Over Time]
+  E3[Narrative Summary]
+  E4[Restart Button]
+  E5[Share/Export Option (optional)]
+
+  E1 --> E2
+  E2 --> E3
+  E3 --> E4
+  E4 --> E5
+```
+
+### Current Plan Summary
+- The game is being built from scratch with a Vite + React + TypeScript stack.
+- The user will phase out oil fields on a map, invest in energy options, and receive annual feedback on emissions, energy, happiness, equality, and revenue.
+- The win condition is phasing out oil fields in line with the Paris Agreement.
+- The UI will feature a clickable map, resource bars, investment controls, timeline, annual popups, and a language toggle (English/Norwegian).
+- See `.cursor/scratchpad.md` for the full planning history and rationale.
