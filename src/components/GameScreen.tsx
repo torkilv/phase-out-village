@@ -23,15 +23,12 @@ export const GameScreen = () => {
     });
   }, []); // Only run once on mount
 
-  // Update oil fields when year changes
+  // Update oil fields when year changes (without resetting game state)
   useEffect(() => {
     if (state.oilFields.length > 0) { // Only update if already initialized
       const updatedOilFields = getActiveOilFields(state.currentYear);
-      actions.initializeGame({
-        oilFields: updatedOilFields,
-        investmentOptions: state.investmentOptions,
-        parisAgreementTargets: state.parisAgreementTargets,
-      });
+      // Only update oil fields data, preserve all other game state
+      actions.updateOilFields(updatedOilFields);
     }
   }, [state.currentYear]);
 
@@ -119,7 +116,7 @@ export const GameScreen = () => {
           </div>
           
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '12px', color: '#718096', marginBottom: '4px' }}>ENERGY PRODUCTION</div>
+            <div style={{ fontSize: '12px', color: '#718096', marginBottom: '4px' }}>ENERGY SURPLUS</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontSize: '16px' }}>{generateStarDisplay(getMetricStars('energy', state.metrics.energy))}</span>
               <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#38a169' }}>
@@ -161,10 +158,8 @@ export const GameScreen = () => {
             oilFields={state.oilFields}
             currentYear={state.currentYear}
             phasedOutFields={state.phasedOutFields}
-            fieldDividends={state.fieldDividends}
-            onFieldClick={actions.selectField}
-            selectedField={state.selectedField}
-            metrics={state.metrics}
+            fieldsToPhaseOutThisYear={state.fieldsToPhaseOutThisYear}
+            onToggleFieldForPhaseOut={actions.toggleFieldForPhaseOut}
           />
         </div>
 

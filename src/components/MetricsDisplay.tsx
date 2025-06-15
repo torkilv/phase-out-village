@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatNumber, generateStarDisplay, metricsToStars, STAR_THRESHOLDS } from '../utils/scoringSystem';
+import { formatNumber, generateStarDisplay } from '../utils/scoringSystem';
 import { getSovereignWealthFundStatus, NORWEGIAN_BASELINES } from '../utils/norwegianMetrics';
 
 interface MetricsDisplayProps {

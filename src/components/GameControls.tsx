@@ -18,12 +18,8 @@ interface GameControlsProps {
 
 export const GameControls: React.FC<GameControlsProps> = ({
   currentYear,
-  metrics,
-  availableInvestments,
   oilFields,
   onAdvanceYear,
-  onStartInvestment,
-  onPhaseOutField,
   fieldsToPhaseOutThisYear = new Set(),
   onPhaseOutSelectedFields,
   onClearFieldsToPhaseOut,
@@ -32,14 +28,6 @@ export const GameControls: React.FC<GameControlsProps> = ({
   
   // Get active fields (not phased out)
   const activeFields = oilFields.filter(field => !state.phasedOutFields.has(field.id));
-  
-  // Format currency
-  const formatCurrency = (amount: number) => {
-    if (amount >= 1e9) return `$${(amount / 1e9).toFixed(1)}B`;
-    if (amount >= 1e6) return `$${(amount / 1e6).toFixed(1)}M`;
-    if (amount >= 1e3) return `$${(amount / 1e3).toFixed(1)}K`;
-    return `$${amount.toFixed(0)}`;
-  };
 
   // Format emissions
   const formatEmissions = (amount: number) => {

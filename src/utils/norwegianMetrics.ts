@@ -82,8 +82,7 @@ export function calculateNorwegianHappiness(
  * Calculate sovereign wealth fund growth rate
  */
 export function calculateSovereignWealthFundGrowth(
-  petroleumRevenue: number, // Annual petroleum revenue (NOK)
-  baseYear: number = 2024
+  petroleumRevenue: number // Annual petroleum revenue (NOK)
 ): number {
   const baseline = NORWEGIAN_BASELINES.sovereignWealthFund;
   

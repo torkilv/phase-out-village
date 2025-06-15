@@ -9,9 +9,11 @@ import {
   calculateInvestmentImpact 
 } from '../utils/dataProcessing';
 import { 
-  calculateNorwegianMetrics,
-  getSovereignWealthFundStatus 
+  calculateNorwegianMetrics
 } from '../utils/norwegianMetrics';
+import { 
+  updateFieldsWithProjections 
+} from '../utils/productionModeling';
 
 // Game State Interface
 interface GameState {
@@ -46,6 +48,7 @@ type GameAction =
   | { type: 'UPDATE_OIL_PRICE'; payload: number }
   | { type: 'UPDATE_METRICS'; payload: Metrics }
   | { type: 'UPDATE_FIELD_DIVIDENDS'; payload: Record<string, number> }
+  | { type: 'UPDATE_OIL_FIELDS'; payload: OilField[] }
   | { type: 'INITIALIZE_GAME'; payload: { 
       oilFields: OilField[]; 
       investmentOptions: InvestmentOption[]; 
@@ -97,9 +100,19 @@ const initialState: GameState = {
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'ADVANCE_YEAR':
+      const nextYear = state.currentYear + 1;
+      
+      // Apply production modeling for the new year
+      const fieldsForNextYear = updateFieldsWithProjections(
+        state.oilFields,
+        nextYear,
+        state.phasedOutFields
+      );
+      
       return {
         ...state,
-        currentYear: state.currentYear + 1,
+        currentYear: nextYear,
+        oilFields: fieldsForNextYear,
       };
 
     case 'SET_YEAR':
@@ -147,6 +160,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         fieldDividends: action.payload,
       };
 
+    case 'UPDATE_OIL_FIELDS':
+      // Apply production modeling to update fields with realistic decline curves
+      const fieldsWithProjections = updateFieldsWithProjections(
+        action.payload,
+        state.currentYear,
+        state.phasedOutFields
+      );
+      
+      return {
+        ...state,
+        oilFields: fieldsWithProjections,
+      };
+
     case 'INITIALIZE_GAME':
       return {
         ...state,
@@ -174,10 +200,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
 
     case 'PHASE_OUT_SELECTED_FIELDS':
+      const newPhasedOutFields = new Set([...state.phasedOutFields, ...state.fieldsToPhaseOutThisYear]);
+      
+      // Apply production modeling with updated phased-out fields
+      const updatedFieldsAfterPhaseOut = updateFieldsWithProjections(
+        state.oilFields,
+        state.currentYear,
+        newPhasedOutFields
+      );
+      
       return {
         ...state,
-        phasedOutFields: new Set([...state.phasedOutFields, ...state.fieldsToPhaseOutThisYear]),
+        phasedOutFields: newPhasedOutFields,
         fieldsToPhaseOutThisYear: new Set(),
+        oilFields: updatedFieldsAfterPhaseOut,
       };
 
     case 'UPDATE_CUMULATIVE_METRICS':
@@ -206,6 +242,7 @@ interface GameContextType {
     phaseOutField: (fieldId: string) => void;
     startInvestment: (investment: InvestmentOption) => void;
     selectField: (field: OilField | null) => void;
+    updateOilFields: (oilFields: OilField[]) => void;
     initializeGame: (data: {
       oilFields: OilField[];
       investmentOptions: InvestmentOption[];
@@ -296,6 +333,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     phaseOutField: (fieldId: string) => dispatch({ type: 'PHASE_OUT_FIELD', payload: fieldId }),
     startInvestment: (investment: InvestmentOption) => dispatch({ type: 'START_INVESTMENT', payload: investment }),
     selectField: (field: OilField | null) => dispatch({ type: 'SELECT_FIELD', payload: field }),
+    updateOilFields: (oilFields: OilField[]) => dispatch({ type: 'UPDATE_OIL_FIELDS', payload: oilFields }),
     initializeGame: (data: {
       oilFields: OilField[];
       investmentOptions: InvestmentOption[];

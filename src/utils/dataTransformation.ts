@@ -1,6 +1,5 @@
 import { data } from '../generated/data';
 import type { OilField } from '../types';
-import { projectFutureProduction } from './dataProcessing';
 
 // Approximate coordinates for Norwegian oil fields (simplified)
 const FIELD_COORDINATES: Record<string, { lat: number; lon: number }> = {

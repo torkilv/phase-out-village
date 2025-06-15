@@ -23,8 +23,7 @@ export const HexagonalMap: React.FC<HexagonalMapProps> = ({
   phasedOutFields,
   fieldDividends,
   onFieldClick,
-  selectedField,
-  metrics = { emissions: 0, energy: 100, happiness: 100, revenue: 0 }
+  selectedField
 }) => {
   const [hoveredField, setHoveredField] = useState<string | null>(null);
 

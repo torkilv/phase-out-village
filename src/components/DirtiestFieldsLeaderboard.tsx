@@ -17,7 +17,7 @@ export const DirtiestFieldsLeaderboard: React.FC<DirtiestFieldsLeaderboardProps>
   onToggleFieldForPhaseOut,
   currentYear,
 }) => {
-  // Calculate emissions intensity for each active field
+  // Calculate emissions intensity for each active field (not manually phased out)
   const activeFields = oilFields.filter(field => !phasedOutFields.has(field.id));
   
   const fieldsWithIntensity = activeFields.map(field => {
@@ -38,10 +38,14 @@ export const DirtiestFieldsLeaderboard: React.FC<DirtiestFieldsLeaderboardProps>
       emissions,
       production,
     };
-  }).filter(field => field.production > 0); // Only show producing fields
+  });
+  
+  // Separate producing fields from non-producing fields
+  const producingFields = fieldsWithIntensity.filter(field => field.production > 0);
+  const nonProducingActiveFields = fieldsWithIntensity.filter(field => field.production === 0);
   
   // Sort by emissions intensity (highest first)
-  const sortedFields = fieldsWithIntensity.sort((a, b) => b.intensity - a.intensity);
+  const sortedFields = producingFields.sort((a, b) => b.intensity - a.intensity);
   
   // Take top 10 dirtiest fields
   const topDirtiestFields = sortedFields.slice(0, 10);
@@ -51,43 +55,63 @@ export const DirtiestFieldsLeaderboard: React.FC<DirtiestFieldsLeaderboardProps>
   };
 
   return (
-    <div style={{ 
-      backgroundColor: 'white', 
-      borderRadius: '12px', 
-      padding: '20px', 
-      boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-      border: '1px solid #E2E8F0'
+    <div style={{
+      backgroundColor: '#F7FAFC',
+      borderRadius: '12px',
+      padding: '20px',
+      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+      height: 'fit-content'
     }}>
-      <div style={{ marginBottom: '16px' }}>
-        <h3 style={{ 
-          fontSize: '20px', 
-          fontWeight: 'bold', 
-          color: '#2D3748', 
-          marginBottom: '8px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: '16px',
+        gap: '8px'
+      }}>
+        <span style={{ fontSize: '24px' }}>🏭</span>
+        <h3 style={{
+          margin: 0,
+          fontSize: '18px',
+          fontWeight: 'bold',
+          color: '#2D3748'
         }}>
-          🏭 Dirtiest Fields ({currentYear})
+          Dirtiest Fields ({currentYear})
         </h3>
-        <p style={{ 
-          fontSize: '14px', 
-          color: '#718096',
-          margin: 0
-        }}>
-          Fields with highest CO₂ emissions per barrel. Consider phasing these out first for maximum climate impact.
-        </p>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {topDirtiestFields.length === 0 ? (
+      <div style={{ marginBottom: '12px', fontSize: '14px', color: '#4A5568' }}>
+        Click fields to select for phase-out
+      </div>
+
+      <div style={{
+        maxHeight: '400px',
+        overflowY: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px'
+      }}>
+
+        {topDirtiestFields.length === 0 && nonProducingActiveFields.length === 0 ? (
           <div style={{ 
             textAlign: 'center', 
             padding: '20px', 
             color: '#718096',
             fontStyle: 'italic'
           }}>
-            🎉 All fields have been phased out or are not producing this year!
+            🎉 All fields have been manually phased out!
+          </div>
+        ) : topDirtiestFields.length === 0 && nonProducingActiveFields.length > 0 ? (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '20px', 
+            color: '#718096',
+            fontStyle: 'italic'
+          }}>
+            📉 All remaining fields have naturally declined to zero production.
+            <br />
+            <span style={{ fontSize: '12px', marginTop: '8px', display: 'block' }}>
+              {nonProducingActiveFields.length} field{nonProducingActiveFields.length !== 1 ? 's' : ''} still available for phase-out
+            </span>
           </div>
         ) : (
           topDirtiestFields.map((field, index) => {
@@ -140,76 +164,69 @@ export const DirtiestFieldsLeaderboard: React.FC<DirtiestFieldsLeaderboardProps>
 
                 {/* Field Info */}
                 <div style={{ flex: 1 }}>
-                  <div style={{ 
-                    fontWeight: 'bold', 
+                  <div style={{
+                    fontWeight: 'bold',
+                    fontSize: '14px',
                     color: '#2D3748',
-                    fontSize: '16px',
                     marginBottom: '4px'
                   }}>
                     {field.name}
                   </div>
-                  <div style={{ 
-                    fontSize: '12px', 
-                    color: '#718096',
+                  <div style={{
                     display: 'flex',
-                    gap: '16px',
-                    flexWrap: 'wrap'
+                    gap: '12px',
+                    fontSize: '12px',
+                    color: '#4A5568'
                   }}>
                     <span>
-                      <strong>Intensity:</strong> {field.intensity.toFixed(2)} tonnes CO₂/barrel
+                      <strong>{field.intensity.toFixed(1)}</strong> kg CO₂/barrel
                     </span>
                     <span>
-                      <strong>Annual Emissions:</strong> {formatNumber(field.emissions, 'tonnes CO₂')}
+                      <strong>{formatNumber(field.emissions / 1000, '')}</strong>K tonnes/year
                     </span>
                     <span>
-                      <strong>Production:</strong> {formatNumber(field.production, 'barrels')}
+                      <strong>{formatNumber(field.production, '')}</strong>M barrels/year
                     </span>
                   </div>
                 </div>
 
                 {/* Selection Indicator */}
-                <div style={{
-                  width: '24px',
-                  height: '24px',
-                  borderRadius: '4px',
-                  border: `2px solid ${isSelected ? '#3182CE' : '#CBD5E0'}`,
-                  backgroundColor: isSelected ? '#3182CE' : 'transparent',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontSize: '14px',
-                  fontWeight: 'bold'
-                }}>
-                  {isSelected && '✓'}
-                </div>
+                {isSelected && (
+                  <div style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    backgroundColor: '#3182CE',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '14px',
+                    fontWeight: 'bold'
+                  }}>
+                    ✓
+                  </div>
+                )}
               </div>
             );
           })
         )}
       </div>
 
-      {fieldsToPhaseOutThisYear.size > 0 && (
-        <div style={{
-          marginTop: '16px',
-          padding: '12px',
-          backgroundColor: '#EBF8FF',
-          borderRadius: '8px',
-          border: '1px solid #BEE3F8'
-        }}>
-          <div style={{ 
-            fontSize: '14px', 
-            fontWeight: 'bold', 
-            color: '#2B6CB0',
-            marginBottom: '4px'
-          }}>
-            Selected for Phase-out: {fieldsToPhaseOutThisYear.size} field{fieldsToPhaseOutThisYear.size !== 1 ? 's' : ''}
-          </div>
-          <div style={{ fontSize: '12px', color: '#2C5282' }}>
-            Click "Advance Year" to phase out selected fields and see the impact.
-          </div>
-        </div>
-      )}
+      {/* Summary */}
+      <div style={{
+        marginTop: '16px',
+        padding: '12px',
+        backgroundColor: '#EDF2F7',
+        borderRadius: '8px',
+        fontSize: '12px',
+        color: '#4A5568'
+      }}>
+        <div>Active fields: {activeFields.length}</div>
+        <div>Producing fields: {producingFields.length}</div>
+        <div>Naturally declined: {nonProducingActiveFields.length}</div>
+        <div>Manually phased out: {phasedOutFields.size}</div>
+      </div>
     </div>
   );
 }; 
