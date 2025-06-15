@@ -44,7 +44,7 @@ const FIELD_CATEGORIES = {
 /**
  * Determine field category based on production history and characteristics
  */
-function categorizeField(fieldName: string, productionData: Record<string, { productionOil?: number; productionGas?: number; emission?: number }>): keyof typeof FIELD_CATEGORIES {
+function categorizeField(_fieldName: string, productionData: Record<string, { productionOil?: number; productionGas?: number; emission?: number }>): keyof typeof FIELD_CATEGORIES {
   const years = Object.keys(productionData).map(Number).filter(y => !isNaN(y)).sort();
   const firstYear = years[0];
   const hasRecentProduction = years.some(year => year >= 2020 && productionData[year]?.productionOil);

@@ -33,7 +33,6 @@ export const IsometricMap: React.FC<IsometricMapProps> = ({
 
   // Create 3D isometric island layout
   const getIslandPosition = (index: number) => {
-    const totalFields = oilFields.length;
     const radius = 200;
     const centerX = mapWidth / 2;
     const centerY = mapHeight / 2 + 50;
