@@ -75,6 +75,71 @@
   color: #2c3e50;
 }
 
+/* Dirtiest Fields Section */
+.dirtiest-fields-section {
+  margin-bottom: 30px;
+}
+
+.dirtiest-fields-section h3 {
+  margin-bottom: 15px;
+  color: #2c3e50;
+  font-size: 1.2em;
+}
+
+.dirtiest-fields-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dirty-field-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.dirty-field-item:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-color: #ff6b6b;
+}
+
+.field-rank {
+  font-weight: bold;
+  font-size: 1.1em;
+  color: #ff6b6b;
+  min-width: 30px;
+}
+
+.field-info {
+  flex: 1;
+}
+
+.field-name {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 4px;
+}
+
+.field-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 0.9em;
+}
+
+.intensity {
+  color: #ff6b6b;
+  font-weight: 500;
+}
+
+.total-emission {
+  color: #666;
+}
+
 /* Oil Fields Section */
 .oil-fields-section {
   margin-bottom: 30px;

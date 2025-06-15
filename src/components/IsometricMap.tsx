@@ -28,27 +28,39 @@ export const IsometricMap: React.FC<IsometricMapProps> = ({
 }) => {
   const [hoveredField, setHoveredField] = useState<string | null>(null);
 
-  const mapWidth = 1000;
-  const mapHeight = 700;
+  const mapWidth = 1200;
+  const mapHeight = 800;
 
-  // Create 3D isometric island layout
-  const getIslandPosition = (index: number) => {
-    const radius = 200;
-    const centerX = mapWidth / 2;
-    const centerY = mapHeight / 2 + 50;
+  // Create hexagonal grid layout with proper spacing for readability
+  const getHexPosition = (index: number) => {
+    const hexRadius = 50; // Increased from 35 to 50
+    const hexWidth = hexRadius * 2;
+    const hexHeight = hexRadius * Math.sqrt(3);
+    const cols = 10; // Reduced from 12 to 10 for better spacing
+    const padding = 15; // Added padding between hexagons
     
-    // Create concentric circles for 3D island effect
-    const ringIndex = Math.floor(index / 8);
-    const posInRing = index % 8;
-    const ringRadius = radius - (ringIndex * 60);
-    const angle = (posInRing / 8) * Math.PI * 2 + (ringIndex * 0.3);
+    const col = index % cols;
+    const row = Math.floor(index / cols);
     
-    // 3D isometric transformation
-    const x = centerX + Math.cos(angle) * ringRadius;
-    const y = centerY + Math.sin(angle) * ringRadius * 0.6; // Isometric Y compression
-    const z = ringIndex * 20; // Height layers
+    // Hexagonal grid offset (every other row is shifted)
+    const xOffset = (row % 2) * ((hexWidth * 0.75) + padding) / 2;
     
-    return { x, y, z, ringIndex };
+    const x = (mapWidth / 2) - (cols * (hexWidth * 0.75 + padding)) / 2 + col * (hexWidth * 0.75 + padding) + xOffset;
+    const y = (mapHeight / 2) - (6 * (hexHeight * 0.75 + padding)) / 2 + row * (hexHeight * 0.75 + padding);
+    
+    return { x, y, z: 0, ringIndex: row };
+  };
+
+  // Generate hexagon path
+  const getHexagonPath = (centerX: number, centerY: number, radius: number) => {
+    const points = [];
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI / 3) * i;
+      const x = centerX + radius * Math.cos(angle);
+      const y = centerY + radius * Math.sin(angle);
+      points.push(`${x},${y}`);
+    }
+    return `M ${points.join(' L ')} Z`;
   };
 
   const getFieldVisuals = (field: OilField) => {
@@ -92,7 +104,7 @@ export const IsometricMap: React.FC<IsometricMapProps> = ({
   };
 
   const renderPlatform = (field: OilField, index: number) => {
-    const pos = getIslandPosition(index);
+    const pos = getHexPosition(index);
     const visuals = getFieldVisuals(field);
     const hoverScale = visuals.isHovered ? 1.1 : 1;
     const selectScale = visuals.isSelected ? 1.2 : 1;
@@ -127,33 +139,27 @@ export const IsometricMap: React.FC<IsometricMapProps> = ({
         {/* Platform shadow */}
         <ellipse cx="2" cy="22" rx="28" ry="10" fill="rgba(0,0,0,0.4)" opacity="0.7" />
 
-        {/* 3D Platform base - isometric cube */}
+        {/* Hexagonal Platform base */}
         <g>
-          {/* Top face */}
+          {/* Main hexagon */}
           <path
-            d="M -20,-10 L 0,-20 L 20,-10 L 20,10 L 0,20 L -20,10 Z"
+            d={getHexagonPath(0, 0, 40)}
             fill={visuals.colors.base}
             stroke={visuals.colors.shadow}
             strokeWidth="2"
           />
           
-          {/* Left face */}
+          {/* Inner hexagon for depth */}
           <path
-            d="M -20,-10 L -20,10 L -20,25 L -20,15 L 0,5 L 0,-20 Z"
-            fill={visuals.colors.shadow}
-            opacity="0.8"
+            d={getHexagonPath(0, 0, 32)}
+            fill="none"
+            stroke="rgba(255,255,255,0.3)"
+            strokeWidth="1"
           />
           
-          {/* Right face */}
+          {/* Highlight hexagon */}
           <path
-            d="M 20,-10 L 20,10 L 20,25 L 20,15 L 0,5 L 0,-20 Z"
-            fill={visuals.colors.shadow}
-            opacity="0.6"
-          />
-          
-          {/* Highlight */}
-          <path
-            d="M -15,-7 L 0,-15 L 15,-7 L 15,7 L 0,15 L -15,7 Z"
+            d={getHexagonPath(0, 0, 28)}
             fill={visuals.colors.highlight}
             opacity="0.4"
           />
@@ -170,6 +176,44 @@ export const IsometricMap: React.FC<IsometricMapProps> = ({
           <rect x="-2" y="-22" width="4" height="12" fill="#6b7280" opacity="0.8" />
           <circle cx="0" cy="-18" r="2" fill="#dc2626" />
           <circle cx="0" cy="-18" r="1" fill="#fca5a5" opacity="0.8" />
+        </g>
+
+        {/* Field information overlay */}
+        <g opacity={visuals.isHovered || visuals.isSelected ? 1 : 0.8}>
+          {/* Field name */}
+          <text
+            x="0" y="15"
+            textAnchor="middle"
+            fontSize="8"
+            fill="white"
+            fontWeight="bold"
+            stroke="rgba(0,0,0,0.5)"
+            strokeWidth="0.5"
+          >
+            {field.name.length > 10 ? field.name.substring(0, 10) + '...' : field.name}
+          </text>
+          
+          {/* Production info */}
+          <text
+            x="0" y="25"
+            textAnchor="middle"
+            fontSize="6"
+            fill="white"
+            opacity="0.9"
+          >
+            {visuals.production.toFixed(1)}M bbl
+          </text>
+          
+          {/* Emissions info */}
+          <text
+            x="0" y="33"
+            textAnchor="middle"
+            fontSize="6"
+            fill={visuals.intensity > 20 ? "#fca5a5" : "#86efac"}
+            fontWeight="bold"
+          >
+            {(visuals.emissions / 1000).toFixed(0)}K CO₂
+          </text>
         </g>
 
         {/* Side structures for larger platforms */}
@@ -290,10 +334,12 @@ export const IsometricMap: React.FC<IsometricMapProps> = ({
         <text
           x="0" y="40"
           textAnchor="middle"
-          fill="#1e293b"
-          fontSize="9"
-          fontWeight="600"
-          style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}
+          fill="white"
+          fontSize="10"
+          fontWeight="700"
+          stroke="#000000"
+          strokeWidth="0.5"
+          style={{ textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}
         >
           {field.name.length > 8 ? field.name.substring(0, 8) + '...' : field.name}
         </text>
@@ -303,56 +349,6 @@ export const IsometricMap: React.FC<IsometricMapProps> = ({
 
   return (
     <div className="game-map-container">
-      {/* Top UI Bar */}
-      <div className="game-ui-top">
-        <div className="metric-display energy">
-          <div className="metric-icon">⚡</div>
-          <div className="metric-info">
-            <div className="metric-label">Energy</div>
-            <div className="metric-stars">
-              {Array.from({length: 5}).map((_, i) => (
-                <span key={i} className={i < Math.floor(metrics.energy / 20) ? 'star filled' : 'star'}>★</span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="metric-display money">
-          <div className="metric-icon">💰</div>
-          <div className="metric-info">
-            <div className="metric-label">Money</div>
-            <div className="metric-stars">
-              {Array.from({length: 5}).map((_, i) => (
-                <span key={i} className={i < Math.floor(metrics.revenue / 1e9) ? 'star filled' : 'star'}>★</span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="metric-display green">
-          <div className="metric-icon">🌱</div>
-          <div className="metric-info">
-            <div className="metric-label">Green</div>
-            <div className="metric-stars">
-              {Array.from({length: 5}).map((_, i) => (
-                <span key={i} className={i < Math.floor((100 - metrics.emissions / 1000) / 20) ? 'star filled' : 'star'}>★</span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="metric-display happy">
-          <div className="metric-icon">😊</div>
-          <div className="metric-info">
-            <div className="metric-label">Happy</div>
-            <div className="metric-stars">
-              {Array.from({length: 5}).map((_, i) => (
-                <span key={i} className={i < Math.floor(metrics.happiness / 20) ? 'star filled' : 'star'}>★</span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Main 3D Map */}
       <div className="game-map-3d">

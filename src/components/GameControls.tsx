@@ -10,6 +10,10 @@ interface GameControlsProps {
   onAdvanceYear: () => void;
   onStartInvestment: (investment: InvestmentOption) => void;
   onPhaseOutField: (fieldId: string) => void;
+  // New props for enhanced gameplay
+  fieldsToPhaseOutThisYear?: Set<string>;
+  onPhaseOutSelectedFields?: () => void;
+  onClearFieldsToPhaseOut?: () => void;
 }
 
 export const GameControls: React.FC<GameControlsProps> = ({
@@ -20,6 +24,9 @@ export const GameControls: React.FC<GameControlsProps> = ({
   onAdvanceYear,
   onStartInvestment,
   onPhaseOutField,
+  fieldsToPhaseOutThisYear = new Set(),
+  onPhaseOutSelectedFields,
+  onClearFieldsToPhaseOut,
 }) => {
   const { state } = useGame();
   
@@ -44,155 +51,98 @@ export const GameControls: React.FC<GameControlsProps> = ({
   return (
     <div className="game-controls">
       <div className="year-controls">
-        <h2>Year: {currentYear}</h2>
-        <div className="oil-price-display">
-          <strong>Oil Price: ${state.oilPrice.toFixed(2)}/barrel</strong>
-        </div>
-        <button onClick={onAdvanceYear}>Advance Year</button>
-      </div>
-
-      <div className="metrics-display">
-        <h3>Current Metrics</h3>
-        <div className="metrics-grid">
-          <div>
-            <h4>Emissions</h4>
-            <p>{formatEmissions(metrics.emissions)}</p>
-          </div>
-          <div>
-            <h4>Energy Security</h4>
-            <p>{metrics.energy.toFixed(1)}%</p>
-          </div>
-          <div>
-            <h4>Public Happiness</h4>
-            <p>{metrics.happiness.toFixed(1)}%</p>
-          </div>
-          <div>
-            <h4>Economic Equality</h4>
-            <p>{metrics.equality.toFixed(1)}%</p>
-          </div>
-          <div>
-            <h4>Total Revenue</h4>
-            <p>{formatCurrency(metrics.revenue)}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="oil-fields-section">
-        <h3>Oil Fields ({activeFields.length} active, {state.phasedOutFields.size} phased out)</h3>
-        <div className="fields-grid">
-          {oilFields.slice(0, 10).map(field => { // Show first 10 fields
-            const isActive = !state.phasedOutFields.has(field.id);
-            const dividend = state.fieldDividends[field.id] || 0;
-            const currentData = field.production[currentYear.toString()];
-            
-            return (
-              <div key={field.id} className={`field-card ${isActive ? 'active' : 'phased-out'}`}>
-                <h4>{field.name}</h4>
-                <div className="field-info">
-                  {currentData?.productionOil && (
-                    <p>Production: {currentData.productionOil.toFixed(2)}M barrels</p>
-                  )}
-                  {currentData?.emission && (
-                    <p>Emissions: {formatEmissions(currentData.emission)}</p>
-                  )}
-                  {dividend > 0 && (
-                    <p>Dividend: {formatCurrency(dividend)}</p>
-                  )}
-                </div>
-                {isActive && (
-                  <div className="field-actions">
-                    <select 
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          onPhaseOutField(field.id);
-                        }
-                      }}
-                      defaultValue=""
-                    >
-                      <option value="">Phase out year...</option>
-                      {field.phaseOutYearOptions.map(year => (
-                        <option key={year} value={year}>
-                          Phase out in {year}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-                {!isActive && (
-                  <div className="phased-out-indicator">
-                    <span>Phased Out</span>
-                  </div>
-                )}
+        {/* Enhanced Year Controls */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+          {fieldsToPhaseOutThisYear.size > 0 && (
+            <div style={{
+              padding: '12px',
+              backgroundColor: '#FFF3CD',
+              border: '1px solid #FFEAA7',
+              borderRadius: '8px'
+            }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                Ready to Phase Out: {fieldsToPhaseOutThisYear.size} field{fieldsToPhaseOutThisYear.size !== 1 ? 's' : ''}
               </div>
-            );
-          })}
-        </div>
-        {oilFields.length > 10 && (
-          <p className="more-fields-note">
-            ... and {oilFields.length - 10} more fields
-          </p>
-        )}
-      </div>
-
-      <div className="investments-section">
-        <h3>Investment Options</h3>
-        <div className="investment-options">
-          {availableInvestments.map((investment, index) => (
-            <div key={index} className="investment-option">
-              <h4>{investment.type.charAt(0).toUpperCase() + investment.type.slice(1)}</h4>
-              <p>{investment.description}</p>
-              <div className="investment-details">
-                <p><strong>Cost:</strong> {formatCurrency(investment.cost)}</p>
-                <p><strong>Timeline:</strong> {investment.timeline} years</p>
-                <div className="effects">
-                  <strong>Effects:</strong>
-                  {Object.entries(investment.effect).map(([key, value]) => (
-                    value !== undefined && (
-                      <span key={key} className={`effect ${value > 0 ? 'positive' : 'negative'}`}>
-                        {key}: {value > 0 ? '+' : ''}{value}
-                      </span>
-                    )
-                  ))}
-                </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button 
+                  onClick={() => {
+                    if (onPhaseOutSelectedFields) {
+                      onPhaseOutSelectedFields();
+                      onAdvanceYear();
+                    }
+                  }}
+                  style={{
+                    backgroundColor: '#28A745',
+                    color: 'white',
+                    border: 'none',
+                    padding: '8px 16px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  Phase Out & Advance Year
+                </button>
+                <button 
+                  onClick={onClearFieldsToPhaseOut}
+                  style={{
+                    backgroundColor: '#6C757D',
+                    color: 'white',
+                    border: 'none',
+                    padding: '8px 16px',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Clear Selection
+                </button>
               </div>
-              <button 
-                onClick={() => onStartInvestment(investment)}
-                className="start-investment-btn"
-              >
-                Start Investment
-              </button>
             </div>
-          ))}
+          )}
+          
+          <button 
+            onClick={onAdvanceYear}
+            style={{
+              backgroundColor: fieldsToPhaseOutThisYear.size > 0 ? '#6C757D' : '#007BFF',
+              color: 'white',
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              fontSize: '16px'
+            }}
+          >
+            {fieldsToPhaseOutThisYear.size > 0 ? 'Advance Year (No Changes)' : 'Advance Year'}
+          </button>
         </div>
       </div>
 
-      {state.activeInvestments.length > 0 && (
-        <div className="active-investments-section">
-          <h3>Active Investments ({state.activeInvestments.length})</h3>
-          <div className="active-investments">
-            {state.activeInvestments.map((item, index) => {
-              const yearsActive = currentYear - item.startYear;
-              const progress = Math.min(100, (yearsActive / item.investment.timeline) * 100);
-              
-              return (
-                <div key={index} className="active-investment">
-                  <h4>{item.investment.type}</h4>
-                  <div className="progress-bar">
-                    <div 
-                      className="progress-fill" 
-                      style={{ width: `${progress}%` }}
-                    ></div>
+      <div className="dirtiest-fields-section">
+        <h3>🏭 Dirtiest Fields</h3>
+        <div className="dirtiest-fields-list">
+          {activeFields
+            .map(field => {
+              const currentData = field.production[currentYear.toString()];
+              const intensity = currentData ? (currentData.emission || 0) / Math.max(currentData.productionOil || 1, 1) : 0;
+              return { field, intensity, emission: currentData?.emission || 0 };
+            })
+            .sort((a, b) => b.intensity - a.intensity)
+            .slice(0, 5)
+            .map(({ field, intensity, emission }, index) => (
+              <div key={field.id} className="dirty-field-item">
+                <div className="field-rank">#{index + 1}</div>
+                <div className="field-info">
+                  <div className="field-name">{field.name}</div>
+                  <div className="field-stats">
+                    <span className="intensity">{intensity.toFixed(1)} CO₂/barrel</span>
+                    <span className="total-emission">{formatEmissions(emission)}</span>
                   </div>
-                  <p>
-                    Year {yearsActive + 1} of {item.investment.timeline} 
-                    ({progress.toFixed(0)}% complete)
-                  </p>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            ))}
         </div>
-      )}
+      </div>
     </div>
   );
 }; 

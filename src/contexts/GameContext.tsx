@@ -8,6 +8,10 @@ import {
   calculateTotalEmissions,
   calculateInvestmentImpact 
 } from '../utils/dataProcessing';
+import { 
+  calculateNorwegianMetrics,
+  getSovereignWealthFundStatus 
+} from '../utils/norwegianMetrics';
 
 // Game State Interface
 interface GameState {
@@ -21,6 +25,15 @@ interface GameState {
   oilFields: OilField[];
   investmentOptions: InvestmentOption[];
   parisAgreementTargets: ParisAgreementTarget[];
+  // New state for enhanced gameplay
+  cumulativeMetrics: {
+    totalCo2Saved: number;
+    totalEnergySaved: number;
+    totalEconomicImpact: number;
+    yearsActive: number;
+  };
+  fieldsToPhaseOutThisYear: Set<string>;
+  gameScore: number;
 }
 
 // Action Types
@@ -37,7 +50,18 @@ type GameAction =
       oilFields: OilField[]; 
       investmentOptions: InvestmentOption[]; 
       parisAgreementTargets: ParisAgreementTarget[];
-    }};
+    }}
+  // New actions for enhanced gameplay
+  | { type: 'TOGGLE_FIELD_FOR_PHASE_OUT'; payload: string }
+  | { type: 'CLEAR_FIELDS_TO_PHASE_OUT' }
+  | { type: 'PHASE_OUT_SELECTED_FIELDS' }
+  | { type: 'UPDATE_CUMULATIVE_METRICS'; payload: {
+      totalCo2Saved: number;
+      totalEnergySaved: number;
+      totalEconomicImpact: number;
+      yearsActive: number;
+    }}
+  | { type: 'UPDATE_GAME_SCORE'; payload: number };
 
 // Initial State
 const initialState: GameState = {
@@ -58,6 +82,15 @@ const initialState: GameState = {
   oilFields: [],
   investmentOptions: [],
   parisAgreementTargets: [],
+  // New initial state
+  cumulativeMetrics: {
+    totalCo2Saved: 0,
+    totalEnergySaved: 0,
+    totalEconomicImpact: 0,
+    yearsActive: 0,
+  },
+  fieldsToPhaseOutThisYear: new Set(),
+  gameScore: 0,
 };
 
 // Reducer
@@ -122,6 +155,43 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         parisAgreementTargets: action.payload.parisAgreementTargets,
       };
 
+    case 'TOGGLE_FIELD_FOR_PHASE_OUT':
+      const newFieldsToPhaseOut = new Set(state.fieldsToPhaseOutThisYear);
+      if (newFieldsToPhaseOut.has(action.payload)) {
+        newFieldsToPhaseOut.delete(action.payload);
+      } else {
+        newFieldsToPhaseOut.add(action.payload);
+      }
+      return {
+        ...state,
+        fieldsToPhaseOutThisYear: newFieldsToPhaseOut,
+      };
+
+    case 'CLEAR_FIELDS_TO_PHASE_OUT':
+      return {
+        ...state,
+        fieldsToPhaseOutThisYear: new Set(),
+      };
+
+    case 'PHASE_OUT_SELECTED_FIELDS':
+      return {
+        ...state,
+        phasedOutFields: new Set([...state.phasedOutFields, ...state.fieldsToPhaseOutThisYear]),
+        fieldsToPhaseOutThisYear: new Set(),
+      };
+
+    case 'UPDATE_CUMULATIVE_METRICS':
+      return {
+        ...state,
+        cumulativeMetrics: action.payload,
+      };
+
+    case 'UPDATE_GAME_SCORE':
+      return {
+        ...state,
+        gameScore: action.payload,
+      };
+
     default:
       return state;
   }
@@ -141,6 +211,10 @@ interface GameContextType {
       investmentOptions: InvestmentOption[];
       parisAgreementTargets: ParisAgreementTarget[];
     }) => void;
+    // New actions for enhanced gameplay
+    toggleFieldForPhaseOut: (fieldId: string) => void;
+    clearFieldsToPhaseOut: () => void;
+    phaseOutSelectedFields: () => void;
   };
 }
 
@@ -179,27 +253,27 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
       // Update field dividends
       dispatch({ type: 'UPDATE_FIELD_DIVIDENDS', payload: dividends });
       
-      // Base metrics
-      const baseMetrics: Metrics = {
-        year: state.currentYear,
-        emissions: totalEmissions,
-        energy: 100, // Base energy security
-        happiness: 100, // Base happiness
-        equality: 100, // Base equality
-        revenue: totalRevenue,
-      };
+      // Calculate Norwegian-based metrics
+      const norwegianMetrics = calculateNorwegianMetrics(
+        state.oilFields,
+        state.currentYear,
+        state.phasedOutFields,
+        totalRevenue,
+        totalEmissions,
+        state.metrics // Previous metrics for change calculation
+      );
       
       // Apply investment impacts
-      const investmentImpact = calculateInvestmentImpact(state.activeInvestments, state.currentYear, baseMetrics);
+      const investmentImpact = calculateInvestmentImpact(state.activeInvestments, state.currentYear, norwegianMetrics);
       
-      // Combine base metrics with investment impacts
+      // Combine Norwegian metrics with investment impacts
       const finalMetrics: Metrics = {
         year: state.currentYear,
-        emissions: Math.max(0, baseMetrics.emissions + (investmentImpact.emissions || 0)),
-        energy: Math.max(0, Math.min(200, baseMetrics.energy + (investmentImpact.energy || 0))),
-        happiness: Math.max(0, Math.min(200, baseMetrics.happiness + (investmentImpact.happiness || 0))),
-        equality: Math.max(0, Math.min(200, baseMetrics.equality + (investmentImpact.equality || 0))),
-        revenue: baseMetrics.revenue + (investmentImpact.revenue || 0) + totalDividends,
+        emissions: Math.max(0, norwegianMetrics.emissions + (investmentImpact.emissions || 0)),
+        energy: Math.max(0, Math.min(100, norwegianMetrics.energy + (investmentImpact.energy || 0))),
+        happiness: Math.max(0, Math.min(100, norwegianMetrics.happiness + (investmentImpact.happiness || 0))),
+        equality: Math.max(0, Math.min(100, norwegianMetrics.equality + (investmentImpact.equality || 0))),
+        revenue: norwegianMetrics.revenue + (investmentImpact.revenue || 0) + totalDividends,
       };
       
       return finalMetrics;
@@ -227,6 +301,10 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
       investmentOptions: InvestmentOption[];
       parisAgreementTargets: ParisAgreementTarget[];
     }) => dispatch({ type: 'INITIALIZE_GAME', payload: data }),
+    // New actions for enhanced gameplay
+    toggleFieldForPhaseOut: (fieldId: string) => dispatch({ type: 'TOGGLE_FIELD_FOR_PHASE_OUT', payload: fieldId }),
+    clearFieldsToPhaseOut: () => dispatch({ type: 'CLEAR_FIELDS_TO_PHASE_OUT' }),
+    phaseOutSelectedFields: () => dispatch({ type: 'PHASE_OUT_SELECTED_FIELDS' }),
   };
 
   return (

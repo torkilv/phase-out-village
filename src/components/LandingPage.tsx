@@ -43,17 +43,14 @@ export function LandingPage({ onStart }: { onStart: () => void }) {
           {/* Feature highlights */}
           <HStack gap={8} flexWrap="wrap" justify="center" className="landing-features">
             <Box className="feature-card">
-              <Text fontSize="2xl" mb={2}>🛢️</Text>
               <Text fontWeight="bold" color="gray.700">Real Data</Text>
               <Text fontSize="sm" color="gray.600">30+ Norwegian oil fields</Text>
             </Box>
             <Box className="feature-card">
-              <Text fontSize="2xl" mb={2}>📊</Text>
               <Text fontWeight="bold" color="gray.700">Economic Model</Text>
               <Text fontSize="sm" color="gray.600">Realistic revenue calculations</Text>
             </Box>
             <Box className="feature-card">
-              <Text fontSize="2xl" mb={2}>🌍</Text>
               <Text fontWeight="bold" color="gray.700">Climate Goals</Text>
               <Text fontSize="sm" color="gray.600">Paris Agreement targets</Text>
             </Box>
@@ -65,8 +62,10 @@ export function LandingPage({ onStart }: { onStart: () => void }) {
               size="xl" 
               className="play-button"
               onClick={onStart}
-              _hover={{ transform: 'translateY(-2px)' }}
-              _active={{ transform: 'translateY(0px)' }}
+              bg="green.600"
+              color="white"
+              _hover={{ bg: 'green.700' }}
+              _active={{ bg: 'green.800' }}
               transition="all 0.2s"
             >
               <Text fontSize="xl" fontWeight="bold">Start Game</Text>
@@ -76,15 +75,7 @@ export function LandingPage({ onStart }: { onStart: () => void }) {
             </Text>
           </VStack>
 
-          {/* Decorative elements */}
-          <Box className="floating-elements">
-            <Box className="floating-element element-1">💰</Box>
-            <Box className="floating-element element-2">⚡</Box>
-            <Box className="floating-element element-3">🌱</Box>
-            <Box className="floating-element element-4">🏭</Box>
-            <Box className="floating-element element-5">📈</Box>
-            <Box className="floating-element element-6">🌊</Box>
-          </Box>
+
         </VStack>
       </Container>
     </Box>

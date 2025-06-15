@@ -1,5 +1,6 @@
 import { data } from '../generated/data';
 import type { OilField } from '../types';
+import { projectFutureProduction } from './dataProcessing';
 
 // Approximate coordinates for Norwegian oil fields (simplified)
 const FIELD_COORDINATES: Record<string, { lat: number; lon: number }> = {
@@ -92,6 +93,31 @@ export function transformRawDataToOilFields(): OilField[] {
         emission: data.emission,
       };
     });
+
+    // Add projected data for 2024 if not present
+    if (!production['2024']) {
+      // Use 2022 data as baseline for 2024 projection (simple approach)
+      const data2022 = production['2022'];
+      const data2021 = production['2021'];
+      
+      if (data2022 && (data2022.productionOil || data2022.emission)) {
+        // Simple projection: use 2022 data with slight decline
+        const declineRate = 0.95; // 5% annual decline
+        production['2024'] = {
+          productionOil: data2022.productionOil ? data2022.productionOil * declineRate * declineRate : undefined,
+          productionGas: data2022.productionGas ? data2022.productionGas * declineRate * declineRate : undefined,
+          emission: data2022.emission ? data2022.emission * declineRate * declineRate : undefined,
+        };
+      } else if (data2021 && (data2021.productionOil || data2021.emission)) {
+        // Fallback to 2021 data with more decline
+        const declineRate = 0.90; // 10% annual decline over 3 years
+        production['2024'] = {
+          productionOil: data2021.productionOil ? data2021.productionOil * Math.pow(declineRate, 3) : undefined,
+          productionGas: data2021.productionGas ? data2021.productionGas * Math.pow(declineRate, 3) : undefined,
+          emission: data2021.emission ? data2021.emission * Math.pow(declineRate, 3) : undefined,
+        };
+      }
+    }
     
     return {
       id: fieldId,

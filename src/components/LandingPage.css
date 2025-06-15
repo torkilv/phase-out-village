@@ -1,8 +1,8 @@
-/* Landing Page Styles */
+/* Landing Page Styles - Norwegian Green Party Theme */
 .landing-page {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
   min-height: 100vh;
 }
 
@@ -13,26 +13,12 @@
   right: 0;
   bottom: 0;
   background: 
-    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
-  animation: backgroundShift 20s ease-in-out infinite;
+    radial-gradient(circle at 20% 80%, rgba(34, 197, 94, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(74, 222, 128, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(134, 239, 172, 0.15) 0%, transparent 50%);
 }
 
-@keyframes backgroundShift {
-  0%, 100% { 
-    background: 
-      radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-      radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
-  }
-  50% { 
-    background: 
-      radial-gradient(circle at 80% 20%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-      radial-gradient(circle at 20% 80%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-      radial-gradient(circle at 60% 60%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
-  }
-}
+
 
 .landing-content {
   backdrop-filter: blur(10px);
@@ -41,7 +27,6 @@
   padding: 3rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  animation: fadeInUp 1s ease-out;
 }
 
 @keyframes fadeInUp {
@@ -59,35 +44,17 @@
   color: white !important;
   text-shadow: 
     2px 2px 4px rgba(0, 0, 0, 0.5),
-    0 0 10px rgba(255, 255, 255, 0.3),
-    0 0 20px rgba(255, 255, 255, 0.2);
-  animation: titleGlow 3s ease-in-out infinite alternate;
+    0 0 10px rgba(255, 255, 255, 0.3);
   font-weight: 900 !important;
   letter-spacing: -0.02em;
 }
 
-@keyframes titleGlow {
-  from {
-    text-shadow: 
-      2px 2px 4px rgba(0, 0, 0, 0.5),
-      0 0 10px rgba(255, 255, 255, 0.3),
-      0 0 20px rgba(255, 255, 255, 0.2);
-  }
-  to {
-    text-shadow: 
-      2px 2px 4px rgba(0, 0, 0, 0.5),
-      0 0 15px rgba(255, 255, 255, 0.5),
-      0 0 30px rgba(255, 255, 255, 0.3),
-      0 0 40px rgba(102, 126, 234, 0.2);
-  }
-}
+
 
 .landing-subtitle {
-  animation: fadeIn 1.5s ease-out 0.5s both;
 }
 
 .landing-description {
-  animation: fadeIn 1.5s ease-out 1s both;
   background: rgba(255, 255, 255, 0.9);
   padding: 1.5rem;
   border-radius: 12px;
@@ -95,13 +62,7 @@
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 .landing-features {
-  animation: fadeIn 1.5s ease-out 1.5s both;
 }
 
 .feature-card {
@@ -117,23 +78,21 @@
 }
 
 .feature-card:hover {
-  transform: translateY(-5px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   background: rgba(255, 255, 255, 0.95);
 }
 
 .play-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%) !important;
   color: white !important;
   border: none !important;
   padding: 1.5rem 3rem !important;
   border-radius: 50px !important;
   font-size: 1.25rem !important;
   font-weight: bold !important;
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4) !important;
+  box-shadow: 0 8px 25px rgba(22, 163, 74, 0.4) !important;
   position: relative !important;
   overflow: hidden !important;
-  animation: fadeIn 1.5s ease-out 2s both, buttonPulse 2s ease-in-out infinite 3s;
 }
 
 .play-button::before {
@@ -152,18 +111,11 @@
 }
 
 .play-button:hover {
-  box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6) !important;
-  background: linear-gradient(135deg, #7c8ef0 0%, #8a5cb8 100%) !important;
+  box-shadow: 0 12px 35px rgba(22, 163, 74, 0.6) !important;
+  background: linear-gradient(135deg, #15803d 0%, #16a34a 100%) !important;
 }
 
-@keyframes buttonPulse {
-  0%, 100% {
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-  }
-  50% {
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6), 0 0 0 10px rgba(102, 126, 234, 0.1);
-  }
-}
+
 
 /* Floating decorative elements */
 .floating-elements {

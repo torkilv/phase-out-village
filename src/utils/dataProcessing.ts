@@ -79,7 +79,7 @@ export function calculateEmissionIntensity(field: OilField, year: number): numbe
 }
 
 /**
- * Calculate total emissions for all active fields
+ * Calculate total emissions for all active fields (including exported emissions)
  */
 export function calculateTotalEmissions(
   fields: OilField[],
@@ -90,9 +90,16 @@ export function calculateTotalEmissions(
     if (phasedOutFields.has(field.id)) return total;
     
     const yearData = field.production[year];
-    if (!yearData || !yearData.emission) return total;
+    if (!yearData || !yearData.emission || !yearData.productionOil) return total;
     
-    return total + yearData.emission;
+    // Direct emissions from production
+    const directEmissions = yearData.emission;
+    
+    // Exported emissions: ~3.2 tonnes CO2 per barrel of oil when burned
+    // This is the downstream emissions from Norwegian oil exports
+    const exportedEmissions = yearData.productionOil * 1000000 * 3.2; // Convert to barrels and multiply by CO2 factor
+    
+    return total + directEmissions + exportedEmissions;
   }, 0);
 }
 
