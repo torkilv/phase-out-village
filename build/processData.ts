@@ -1,6 +1,6 @@
 import data from "../tmp/data.json";
 
-const [firstHeader, secondHeader, ...rows] = data as (number | string)[][];
+const [_firstHeader, _secondHeader, ...rows] = data as (number | string)[][];
 
 const result: Record<
   string,
@@ -10,7 +10,7 @@ const result: Record<
   >
 > = {};
 
-for (const [field, year, gwh, productionOil, productionGas, _, emission] of rows) {
+for (const [field, year, _gwh, productionOil, productionGas, _unused, emission] of rows) {
   const dataPoint = { productionOil, productionGas, emission };
   for (const k of Object.keys(dataPoint)) {
     if (!dataPoint[k]) delete dataPoint[k];
